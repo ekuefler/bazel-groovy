@@ -4,6 +4,7 @@ This file defines the following public rules:
                      groovy_libraries can be depended on by java_libraries or other
                      groovy_libraries. The groovy code in the library may reference the java code,
                      but not vice-versa.
+  * groovy_binary - equivalent to java_binary, but also accepts .groovy sources
   * groovy_test - behaves similarly to java_test. Each src must be a JUnit test class or Spock
                   specification and live under src/test/java. Each src will be executed using
                   JUnitCore. deps must contain the compiled srcs and all of its dependencies.
@@ -163,6 +164,20 @@ groovy_test = rule(
   },
   test = True,
 )
+
+def groovy_binary(name, srcs, deps, main_class):
+  groovy_library(
+    name = name + "-lib",
+    srcs = srcs,
+    deps = deps,
+  )
+  native.java_binary(
+    name = name,
+    main_class = main_class,
+    runtime_deps = deps + [
+      name + "-lib",
+    ]
+  )
 
 def spock_test(
     name,
