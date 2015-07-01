@@ -115,8 +115,6 @@ def path_to_class(path):
   return path[len(prefix) : path.index(".groovy")].replace('/', '.')
 
 def groovy_test_impl(ctx):
-  script = ctx.outputs.script
-
   # Extract all transitive dependencies
   all_deps = set(ctx.files.deps + ctx.files._implicit_deps)
   for this_dep in ctx.attr.deps:
@@ -135,13 +133,12 @@ def groovy_test_impl(ctx):
     " ".join(classes),
   )
   ctx.file_action(
-    output = script,
+    output = ctx.outputs.executable,
     content = cmd
   )
 
-  # Return the script and all dependencies needed to run it
+  # Return all dependencies needed to run the tests
   return struct(
-    executable=script,
     runfiles=ctx.runfiles(files=list(all_deps) + ctx.files.data),
     data=ctx.files.data,
   )
@@ -158,9 +155,6 @@ groovy_test = rule(
       Label("//external:hamcrest"),
       Label("//external:junit"),
     ]),
-  },
-  outputs = {
-    'script': '%{name}.sh',
   },
   test = True,
 )
